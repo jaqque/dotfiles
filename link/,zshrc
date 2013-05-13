@@ -1,0 +1,26 @@
+# Add binaries into the path
+PATH=$HOME/bin:$PATH
+export PATH
+
+# Source all files in ~/.dotfiles/source/
+function src() {
+  local file
+  if [[ -n $1 ]]; then
+    while [[ -n $1 ]]; do
+      file=$HOME/.dotfiles/source/$1.zsh
+      [[ -f $file ]] && source $file || echo "$1: no such file"
+      shift
+    done
+  else
+    for file in ~/.dotfiles/source/*.zsh; do
+      source "$file"
+    done
+  fi
+}
+
+# Run dotfiles script, then source.
+function dotfiles() {
+  ~/.dotfiles/bin/dotfiles "$@" && src
+}
+
+src
