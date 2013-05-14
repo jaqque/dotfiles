@@ -1,0 +1,13 @@
+# Don't color normal conditions
+LP_COLOR_X11_ON=''
+LP_COLOR_WRITE=''
+
+# I like to know where I am. Always.
+LP_HOSTNAME_ALWAYS=1
+LP_ENABLE_SSH_COLORS=1
+
+# named dirs *really* messes with Liquid Prompt
+unsetopt autonamedirs
+
+# Liquid Prompt takes care of printing exit codes
+unsetopt printexitvalue
