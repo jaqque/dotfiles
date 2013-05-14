@@ -16,7 +16,7 @@ The one that best suited my desires was Ban Alman's, so I have based my work off
 
 ## What, exactly, does the "dotfiles" command do?
 
-It's really not very complicated. When [dotfiles][dotfiles] is run, it does a few things:
+It's really not very complicated. When dotfiles is run, it does a few things:
 
 1. Git is installed if necessary, via APT or Homebrew (which is installed if necessary).
 2. This repo is cloned into the `~/.dotfiles` directory (or updated if it already exists).
@@ -26,13 +26,14 @@ It's really not very complicated. When [dotfiles][dotfiles] is run, it does a fe
 
 Note:
 
+* Dotfiles named with a comma are installed, with the , replaced with a period (eg: ,zshrc => .zshrc)
 * Dotfiles in the dotfiles repo are ignored.
-* Dotfiles named with a comma (eg: ,zshrc) are installed, with the , replaced with a period (eg: .zshrc)
 * The `backups` folder only gets created when necessary. Any files in `~/` that would have been overwritten by `copy` or `link` get backed up there.
 * Files in `bin` are executable shell scripts.
 * Files in `source` get sourced whenever a new shell is opened (in alphanumeric order).
 * Files in `conf` just sit there. If a config file doesn't _need_ to go in `~/`, put it in there.
-* Files in `caches` are cached files, only used by some scripts. This folder will only be created if necessary.
+* Files in `lib`, also, just sit there. Mostly used for git submodules.
+* Files in `caches` are cached files, only used by some scripts. This folder will be created if necessary.
 
 ## Installation
 ### OS X
@@ -78,7 +79,7 @@ Any file in the `copy` subdirectory will be copied into `~/`. Any file that _nee
 Any file in the `link` subdirectory gets symbolically linked with `ln -s` into `~/`. Edit these, and you change the file in the repo. Don't link files containing sensitive data, or you might accidentally commit that data!
 
 ## Aliases and Functions
-To keep things easy, the `~/.zshrc` and `~/.zprofile` files are extremely simple, and should never need to be modified. Instead, add your aliases, functions, settings, etc into one of the files in the `source` subdirectory, or add a new file. They're all automatically sourced when a new shell is opened.
+To keep things easy, the `~/.zshrc` file is extremely simple, and should never need to be modified. Instead, add your aliases, functions, settings, etc into one of the files in the `source` subdirectory, or add a new file. They're all automatically sourced when a new shell is opened.
 
 ## License
 Copyright (C) 2013 John H. Robinson, IV  
