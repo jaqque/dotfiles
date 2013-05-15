@@ -1,3 +1,6 @@
 [submodule "libs/liquidprompt"]
 	path = libs/liquidprompt
 	url = git://github.com/nojhan/liquidprompt.git
+[submodule "libs/zsh-git-prompt"]
+	path = libs/zsh-git-prompt
+	url = git://github.com/olivierverdier/zsh-git-prompt.git
