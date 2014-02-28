@@ -16,10 +16,12 @@ HELP
 exit; fi
 
 # Logging stuff.
-function e_header()   { echo -e "\n\033[1m$@\033[0m"; }
-function e_success()  { echo -e " \033[1;32m✔\033[0m  $@"; }
-function e_error()    { echo -e " \033[1;31m✖\033[0m  $@"; }
-function e_arrow()    { echo -e " \033[1;33m➜\033[0m  $@"; }
+#  1;36;40 base1:base02  (dark theme)
+#  1;32;47 base01:base2 (light theme)
+function e_header()   { echo -e "\n\033[1;36;40m$@\033[0m"; }
+function e_success()  { echo -e " \033[32m✔\033[0m  $@"; }
+function e_error()    { echo -e " \033[31m✖\033[0m  $@"; }
+function e_arrow()    { echo -e " \033[33m➜\033[0m  $@"; }
 
 # transmorgify filenames; ,x => .x ; \x => x
 function convert_filename () {
