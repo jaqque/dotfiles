@@ -191,6 +191,16 @@ if [[ ! "$(type -P git)" ]]; then
       e_header 'Installing Git'
       sudo apt-get -qq install git-core
       ;;
+    RHEL)
+      # install, if we are root.
+      if [[ $UID = 0 ]]; then
+        e_header 'Installing Git'
+        yum install -y git
+      else
+        e_error 'Please install git, and try again'
+        exit 1
+      fi
+      ;;
     *)
       e_error 'Please install git, and try again'
       exit 1
@@ -214,6 +224,11 @@ if [[ ! -d "$dotfiles" ]]; then
   # ~/.dotfiles doesn't exist? Clone it!
   e_header 'Downloading dotfiles'
   git clone --recursive "$repo" "$dotfiles"
+  result=$?
+  if [[ $result -ne 0 ]]; then
+    e_error "Unable to clone repository. Please fix the error, and try again"
+    exit $result
+  fi
   cd "$dotfiles"
 else
   # Make sure we have the latest files.
