@@ -2,6 +2,9 @@
 LP_COLOR_X11_ON=''
 LP_COLOR_WRITE=''
 
+# Reasonable temperature
+LP_TEMP_THRESHOLD=72
+
 # I like to know where I am. Always.
 LP_HOSTNAME_ALWAYS=1
 LP_ENABLE_SSH_COLORS=1
