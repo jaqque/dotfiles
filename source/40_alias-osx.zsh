@@ -1,3 +1,3 @@
 if [ $( uname -s ) = "Darwin" ]; then
- export LSCOLORS=gxfxcxdxbxegedabagacad
+ export LSCOLORS='exgxdadacxdadaHbadhehc'
 fi
