@@ -1,0 +1,24 @@
+# Normal
+COLOR:0:blue:red
+
+# Bold (hyperlinks)
+#COLOR:1:blue:white
+
+# Reverse (statusline)
+#COLOR:2:yellow:blue
+
+# Bold + reverse (not used)
+#COLOR:3:green:white
+
+# Underline (text emphasis eg em, i, b tags)
+#COLOR:4:magenta:white
+
+# Bold + underline (hyperlinks w/in emphasis)
+#COLOR:5:blue:white
+
+# Revers + underline (current hyperlink)
+COLOR:6:brightred:black
+
+# reverse + underline + bold (WHEREIS search hits)
+#COLOR:7:magenta:cyan
+

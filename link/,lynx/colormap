@@ -1,0 +1,37 @@
+LSS		SOLARIZED	ANSI
+------------	---------	-------------
+black		base02		black
+red		red		red
+green		green		green
+brown		yellow		yellow
+blue		blue		blue
+magenta		magenta		magenta
+cyan		cyan		cyan
+lightgray	base2		white
+gray		base03		bright black
+brightred	orange		bright red
+brightgreen	base01		bright green
+yellow		base00		bright yellow
+brightblue	base0		bright blue
+brightmagenta	violet		bright magenta
+brightcyan	base1		bright cyan
+white		base3		bright white
+
+				DARK		LIGHT
+gray		base03		background
+black		base02		bg hilight
+brightgreen	base01		comments	emphasis
+yellow		base00				text
+brightblue	base0		text
+brightcyan	base1		emphasis	comments
+lightgray	base2				bg hilight
+white		base3				background
+
+brown		yellow
+brightred	orange
+red		red
+magenta		magenta
+brightmagenta	violet
+blue		blue
+cyan		cyan
+green		green
