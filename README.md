@@ -8,7 +8,7 @@ I have been wanting, for a long time, to make my dotfiles more managable, especi
 
 I liked all of the ideas, and none of the implementations.
 
-The one that best suited my desires was Ban Alman's, so I have based my work off of his.
+The one that best suited my desires was Ben Alman's, so I have based my work off of his.
 
 [oh-my-zsh]: https://github.com/robbyrussell/oh-my-zsh
 [holman]: https://github.com/holman/dotfiles
