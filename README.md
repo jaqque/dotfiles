@@ -4,7 +4,7 @@ My dotfile repository
 
 ## Why is this a git repo?
 
-I have been wanting, for a long time, to make my dotfiles more managable, especially my zsh dotfiles. I looked at a lot of projects, such as [oh-my-zsh](), Zack Holman's [dotfiles](holman), and Ben Alman's [dotfiles](cowboy).
+I have been wanting, for a long time, to make my dotfiles more managable, especially my zsh dotfiles. I looked at a lot of projects, such as [oh-my-zsh], Zack Holman's [dotfiles][holman], and Ben Alman's [dotfiles][cowboy].
 
 I liked all of the ideas, and none of the implementations.
 
