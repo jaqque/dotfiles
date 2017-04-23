@@ -69,7 +69,14 @@ These things will be installed, but _only_ if they aren't already.
   * git-core
 
 ### Linux (RHEL and Others)
-* Yum (or otherwise)
+* Yum
+* Dnf
+
+### Linux (Arch)
+* Pacman
+
+### Linux (OpenSUSE)
+* Zypper
 
 
 ## The ~/ "copy" step
