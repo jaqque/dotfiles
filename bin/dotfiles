@@ -1,5 +1,6 @@
 #!/bin/sh
-
+# shellcheck disable=SC2039
+# "local" may not be POSIX, but it is legal in dash, inside a function
 whoami="${0##*/}"
 
 case "$1" in
@@ -14,7 +15,7 @@ cleanup() { :; } # placeholder for workdir cleanup
 abort() { # Prints message, cleans up, exits.
   local status=$?
   if [ "$1" ]; then
-    e_error "$@ ($status)"
+    e_error "$* ($status)"
   else
     e_error "Aborting. ($status)"
   fi
@@ -35,6 +36,7 @@ download() {
   # tests:
   #  $downloader is executable
   #  dirname($target) exists
+  # shellcheck disable=2086
   "$downloader" $downloader_args "$source" > "$target"
 }
 
@@ -102,15 +104,15 @@ move() {
 # Logging stuff.
 #  1;36;40 base1:base02  (dark theme)
 #  1;32;47 base01:base2 (light theme)
-e_header()   { command echo -e "\n\033[1;36;40m$@\033[0m"; }
-e_success()  { command echo -e " \033[32m✔\033[0m  $@"; }
-e_error()    { command echo -e " \033[31m✖\033[0m  $@"; }
-e_arrow()    { command echo -e " \033[33m➜\033[0m  $@"; }
+e_header()   { command echo -e "\n\033[1;36;40m$*\033[0m"; }
+e_success()  { command echo -e " \033[32m✔\033[0m  $*"; }
+e_error()    { command echo -e " \033[31m✖\033[0m  $*"; }
+e_arrow()    { command echo -e " \033[33m➜\033[0m  $*"; }
 
 dotfiles=${DOTFILES:-$HOME/.dotfiles} # Override at your own risk.
 URL="${URL:-https://github.com/jaqque/dotfiles/archive/$release.tar.gz}"
-timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)" || abort "Could not get timestamp"
-# timestamp is ISO-8601 in UTC
+#timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)" || abort "Could not get timestamp"
+# timestamp is ISO-8601 in UTC, and may not be necessary (SC2034)
 
 working_dir="$(mktempdir)" || abort "Could not create working directory"
 cleanup() { e_success "Create cleanup ($working_dir)"; } #create_cleanup "$working_dir"
@@ -175,7 +177,7 @@ repeat_string() {
   fi
 
   i="$count"
-  while [ $i -gt 0 ]; do
+  while [ "$i" -gt 0 ]; do
     out="$out$string"
     i=$(( i - 1 ))
   done
