@@ -1,0 +1,188 @@
+#!/bin/sh
+
+whoami="${0##*/}"
+
+case "$1" in
+  -h|--help)    echo "$whoami [version]"; exit 0 ;;
+  -v|--version) echo "Unreleased"; exit 0 ;;
+  -*)           echo "$whoami: Unsupported option: $1"; exit 1 ;;
+esac
+
+release="${1:-master}"
+
+cleanup() { :; } # placeholder for workdir cleanup
+abort() { # Prints message, cleans up, exits.
+  local status=$?
+  if [ "$1" ]; then
+    e_error "$@ ($status)"
+  else
+    e_error "Aborting. ($status)"
+  fi
+  trap - 0
+  cleanup
+  exit $status
+}
+trap abort 0 # If we end abnormally, alert the user
+
+## Download Archive
+
+download() {
+  downloader="$1"
+  downloader_args="$2"
+  source="$3"
+  target="$4"
+
+  # tests:
+  #  $downloader is executable
+  #  dirname($target) exists
+  "$downloader" $downloader_args "$source" > "$target"
+}
+
+find_downloader() {
+  local downloader
+  if [ "$(type -p curl)" ]; then
+    downloader="curl"
+  elif [ "$(type -p wget)" ]; then
+    downloader="wget"
+  else
+    return 1
+  fi
+  echo "$downloader"
+}
+
+get_downloader_args() {
+  local downloader="$1"
+  local args
+  case "$downloader" in
+    curl) args="--fail --location --silent" ;;
+    wget) args="--quiet --output-document=-" ;;
+  esac
+  echo "$args"
+}
+
+mktempdir() {
+  local template="$1"
+  local dir
+  if [ "$template" ]; then
+    dir="$(mktemp -d "$template")" || return 1
+  else
+    dir="$(mktemp -d)" || return 1
+  fi
+  echo "$dir"
+}
+
+create_cleanup() {
+  path="$1"
+  eval "cleanup() {
+    rm -rf \"$path\"/*;
+    rmdir \"$path\" || {
+      local status=\$?;
+      e_error \"Unable to remove $path. (\$status)\"
+      return \$status
+    }
+  }"
+}
+
+extract() { # returns the directory just created
+  # this is not a very robust function.
+  tarball="$1"
+  target_dir="$2"
+  archive_dir="$target_dir/$( tar tf "$tarball" | head -1 )" || exit 1
+  tar x -C "$target_dir" -f "$tarball" || exit 1
+  echo "$archive_dir"
+}
+
+move() {
+  from="$1"
+  to="$2"
+  [ ! -e "$from" ] && return
+  mv "$from" "$to"
+}
+
+# Logging stuff.
+#  1;36;40 base1:base02  (dark theme)
+#  1;32;47 base01:base2 (light theme)
+e_header()   { command echo -e "\n\033[1;36;40m$@\033[0m"; }
+e_success()  { command echo -e " \033[32m✔\033[0m  $@"; }
+e_error()    { command echo -e " \033[31m✖\033[0m  $@"; }
+e_arrow()    { command echo -e " \033[33m➜\033[0m  $@"; }
+
+dotfiles=${DOTFILES:-$HOME/.dotfiles} # Override at your own risk.
+URL="${URL:-https://github.com/jaqque/dotfiles/archive/$release.tar.gz}"
+timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)" || abort "Could not get timestamp"
+# timestamp is ISO-8601 in UTC
+
+working_dir="$(mktempdir)" || abort "Could not create working directory"
+cleanup() { e_success "Create cleanup ($working_dir)"; } #create_cleanup "$working_dir"
+proggy="$(find_downloader)" || abort "Could not find a method to download"
+args="$(get_downloader_args "$proggy")" \
+  || abort "get_downloader_args() cannot fail. You cannot see this message."
+
+e_header Debuggy Info
+e_arrow "working_dir=$working_dir"
+e_arrow "proggy=$proggy"
+e_arrow "args=$args"
+
+if true; then
+download "$proggy" "$args" "$URL" "$working_dir/dotfiles.tar.gz" \
+  || abort "Download failed"
+extract_point="$(extract "$working_dir/dotfiles.tar.gz" "$working_dir")" \
+  || abort "Extraction failed"
+e_arrow "extract_point=$extract_point"
+fi
+
+# The only smart thing, really, is to copy everything to a dotfiles-tmp, move
+# the existing (if any) dotfiles out of the way, link everything in, then
+# remove the dislocated dotfiles. Minimizes duplicates. Need to roll back?
+# Grab a previous commit.
+
+dotfiles_work="$(mktempdir "$dotfiles.XXXXXXXXXX")" || abort "No dotfiles work"
+e_arrow "dotfiles_work=$dotfiles_work"
+move "$dotfiles" "$dotfiles_work" || abort "No movie."
+
+# At this point - there are no dotfiles to speak of. Dangerous !
+move "$extract_point" "$dotfiles" || abort "No sequel to the movie."
+
+e_header Now, link the linkables.
+# I want the linking to be relative. Absolute is easier, but easy is not good.
+# So, if .dotfiles is a subdir of $HOME, relative link. Otherwise, absolute.
+
+# For now, assume subdir of $HOME
+count_directories() {
+  pathname="$1"
+  # Count # of / in a pathname, return that number
+  # Leading / is also counted. Uncertain if that is a bug at thie time (2019-12-19)
+  # $(( <expr> )) is POSIX 2.6.4
+  local directory_count=0
+  until [ "$pathname" = "${pathname#*/}" ]; do
+    pathname="${pathname#*/}"
+    until [ "$pathname" = "${pathname#/}" ]; do
+      pathname="${pathname#/}"
+    done
+    directory_count=$(( directory_count + 1 ))
+  done
+  echo "$directory_count"
+}
+
+repeat_string() {
+  string="${1:-}"
+  count="${2:-1}"
+  local out
+  local i
+
+  if ! [ "$count" -ge 0 ]; then
+    return 1
+  fi
+
+  i="$count"
+  while [ $i -gt 0 ]; do
+    out="$out$string"
+    i=$(( i - 1 ))
+  done
+
+  echo "$out"
+}
+
+
+trap cleanup 0
+# we made it!
