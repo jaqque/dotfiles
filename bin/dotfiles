@@ -1,6 +1,8 @@
 #!/bin/sh
 # shellcheck disable=SC2039
-# "local" may not be POSIX, but it is legal in dash, inside a function
+# "local" may not be POSIX, but it is legal in dash, inside a function.
+# https://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html
+
 whoami="${0##*/}"
 
 case "$1" in
@@ -11,7 +13,15 @@ esac
 
 release="${1:-master}"
 
-cleanup() { :; } # placeholder for workdir cleanup
+# Logging stuff.
+#  1;36;40 base1:base02  (dark theme)
+#  1;32;47 base01:base2 (light theme)
+e_header()   { command echo -e "\n\033[1;36;40m$*\033[0m"; }
+e_success()  { command echo -e " \033[32m✔\033[0m  $*"; }
+e_error()    { command echo -e " \033[31m✖\033[0m  $*"; }
+e_arrow()    { command echo -e " \033[33m➜\033[0m  $*"; }
+
+cleanup() { :; } # placeholder, used by abort() and stage_for_cleanup()
 abort() { # Prints message, cleans up, exits.
   local status=$?
   if [ "$1" ]; then
@@ -73,16 +83,41 @@ mktempdir() {
   echo "$dir"
 }
 
+# meta programming - create a function that cleans up the directory name passed
+# There are multiple temporary directories made, and due to the way sh "arrays"
+# work, there will be problems with whitespace. It may be possible to limit the
+# whitespace problem to \n with judicious manipulation of $IFS. Further testing
+# is warranted. Until then - please avoid whitespace in the temporary directory
+# names. Thank you.
 create_cleanup() {
-  path="$1"
-  eval "cleanup() {
-    rm -rf \"$path\"/*;
-    rmdir \"$path\" || {
-      local status=\$?;
-      e_error \"Unable to remove $path. (\$status)\"
-      return \$status
-    }
-  }"
+  # -n: what would happen?
+  # -p: print current list of paths to remove
+  # Test that $path is defined (rm -rf / is bad), and exists
+  # DEBUG: local doit=echo; remove "=echo" to disable
+  eval 'cleanup() {
+    local doit=echo
+    local status=0
+    case "$1" in
+      -p) echo "'"$*"'"; return ;;
+      -n) doit="echo" ;;
+    esac
+    for path in '"$*"'; do
+      if [ "$path" -a -e "$path" ]; then
+        $doit rm -rf "$path" || {
+          e_error "Unable to remove $path. ($?)"
+          status=1
+        }
+      else
+        status=1
+      fi
+    done
+  return $status
+  }'
+}
+stage_for_cleanup() {
+  # Not pulling any punches - whitepace in pathnames will break. Sorry.
+  # shellcheck disable=SC2046,SC2048,SC2086
+  create_cleanup $(cleanup -p) $*
 }
 
 extract() { # returns the directory just created
@@ -101,21 +136,13 @@ move() {
   mv "$from" "$to"
 }
 
-# Logging stuff.
-#  1;36;40 base1:base02  (dark theme)
-#  1;32;47 base01:base2 (light theme)
-e_header()   { command echo -e "\n\033[1;36;40m$*\033[0m"; }
-e_success()  { command echo -e " \033[32m✔\033[0m  $*"; }
-e_error()    { command echo -e " \033[31m✖\033[0m  $*"; }
-e_arrow()    { command echo -e " \033[33m➜\033[0m  $*"; }
-
 dotfiles=${DOTFILES:-$HOME/.dotfiles} # Override at your own risk.
 URL="${URL:-https://github.com/jaqque/dotfiles/archive/$release.tar.gz}"
 #timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)" || abort "Could not get timestamp"
 # timestamp is ISO-8601 in UTC, and may not be necessary (SC2034)
 
 working_dir="$(mktempdir)" || abort "Could not create working directory"
-cleanup() { e_success "Create cleanup ($working_dir)"; } #create_cleanup "$working_dir"
+stage_for_cleanup "$working_dir"
 proggy="$(find_downloader)" || abort "Could not find a method to download"
 args="$(get_downloader_args "$proggy")" \
   || abort "get_downloader_args() cannot fail. You cannot see this message."
@@ -125,6 +152,7 @@ e_arrow "working_dir=$working_dir"
 e_arrow "proggy=$proggy"
 e_arrow "args=$args"
 
+# DEBUG; remove "if true|false; then" and "fi" to disable
 if true; then
 download "$proggy" "$args" "$URL" "$working_dir/dotfiles.tar.gz" \
   || abort "Download failed"
@@ -185,6 +213,8 @@ repeat_string() {
   echo "$out"
 }
 
-
-trap cleanup 0
+# DEBUG
+cleanup -n
+trap 0
+#trap cleanup 0
 # we made it!
