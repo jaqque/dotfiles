@@ -1,0 +1,35 @@
+#!/bin/sh
+# shellcheck disable=SC2039
+# "local" may not be POSIX, but it is legal in dash, inside a function
+
+
+create_cleanup() {
+  # -n: what would happen?
+  # -p: print current list of paths to remove
+  # Test that $path is defined (rm -rf / is bad), and exists
+  eval 'cleanup() {
+    local doit
+    local status=0
+    case "$1" in
+      -p) echo "'"$*"'"; return ;;
+      -n) doit="echo" ;;
+    esac
+    for path in '"$*"'; do
+      if [ "$path" -a -e "$path" ]; then
+        $doit rm -rf "$path" || {
+          echo _error "Unable to remove $path. ($?)"
+          status=1
+        }
+      else
+        status=1
+      fi
+    done
+  return $status
+  }'
+}
+cleanup() { :; } # placeholder, used by stage_for_cleanup
+stage_for_cleanup() {
+  # Not pulling any punches - whitepace in pathnames will break. Sorry.
+  # shellcheck disable=SC2046,SC2048,SC2086
+  create_cleanup $(cleanup -p) $*
+}
